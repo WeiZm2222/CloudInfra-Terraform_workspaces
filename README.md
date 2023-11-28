@@ -9,3 +9,4 @@ Steps:
 2) Created main.tf file to create s3 bucket to host website
 3) Create bucket-policy.tf and provider.tf 
 4) Terraform init, plan, apply successful => http://zmw-my-static-website46551.s3-website.us-east-1.amazonaws.com
+5) Terraform destroy
