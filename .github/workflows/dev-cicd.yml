@@ -8,9 +8,7 @@ run-name: ${{ github.actor }} is running CICD for C3-Group1 ${{github.base_ref |
 on:
   pull_request:
   push:
-    branches:
-       [*]
-
+    
 
 jobs:
   pre-deploy:
