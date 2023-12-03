@@ -2,11 +2,11 @@
 
 
 resource "aws_s3_bucket" "my-static-website" {
-  bucket = "zmw-my-static-website46551" # give a unique bucket name
+  bucket = "${var.bucket_name}-${var.bucket_env}" # give a unique bucket name
   force_destroy = true
   tags = {
-    Name = "my-static-website"
-    Environment = "Dev"
+    Name = "By ${var.bucket_name}"
+    Environment = var.bucket_env
   }
 }
 

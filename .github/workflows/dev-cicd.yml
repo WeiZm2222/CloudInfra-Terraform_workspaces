@@ -1,0 +1,75 @@
+name: Terraform Workspaces
+run-name: ${{ github.actor }} is running CICD for C3-Group1 ${{github.ref_name}}
+#on:
+#    workflow_dispatch #this is to ensure that the action only runs after you click instead of automatically
+
+#CI - to run on pull request
+
+on:
+  pull_request:
+  push:
+    branches:
+       ["dev"]
+
+
+jobs:
+  pre-deploy:
+    runs-on: ubuntu-latest # running on an ubuntu container via github actions
+    
+    steps:
+      - run: echo "The job is automatically triggered by a ${{ github.event_name }} event on ${{ github.ref_name }} branch." #github.ref_name is the branch name that triggered this workflow
+
+  terraform-init-plan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: print environment
+        run: | 
+          echo "env choice is ${{ github.ref_name }}"
+          
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+    
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+    
+      - name: Terraform init
+        run: terraform init
+    
+      - name: Terraform workspace list
+        run: terraform workspace list
+    
+      - name: Terraform workspace new environment and select
+        run: |
+          terraform workspace select ${{ github.ref_name }} || terraform workspace new ${{ github.ref_name }}
+          terraform workspace list
+    
+      - name: Terraform plan
+        run: terraform plan -var-file=${{ github.ref_name }}.tfvars
+     
+# CD - to run only on push on to dev/main branch
+ 
+  CD:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    needs: [pre-deploy, terraform-init-plan]
+    steps:
+      - name: Terraform-Apply
+        run: terraform apply -var-file=${{ github.ref_name}}.tfvars -auto-approve
+   
+      - name: export Terraform outputs
+        id: tfout
+        run: echo "S3_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
+        
+      - name: Deploy to AWS S3
+        run: |
+        aws s3 sync . s3://${{steps.tfout.outputs.S3_NAME}} --delete
+        working-directory: ./static-website
+
