@@ -9,7 +9,7 @@ on:
   pull_request:
   push:
     branches:
-       ["dev"]
+       [*]
 
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest # running on an ubuntu container via github actions
     
     steps:
-      - run: echo "The job is automatically triggered by a ${{ github.event_name }} event on ${{ github.ref_name }} branch." #github.ref_name is the branch name that triggered this workflow
+      - run: echo "The job is automatically triggered by a ${{ github.event_name }} event on ${{github.base_ref || github.ref_name}}  branch." #github.ref_name is the branch name that triggered this workflow
 
   terraform-init-plan:
     runs-on: ubuntu-latest
@@ -28,7 +28,7 @@ jobs:
       
       - name: print environment
         run: | 
-          echo "env choice is ${{ github.ref_name }}"
+          echo "env choice is ${{github.base_ref || github.ref_name}} "
           
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
@@ -48,11 +48,11 @@ jobs:
     
       - name: Terraform workspace new environment and select
         run: |
-          terraform workspace select ${{ github.ref_name }} || terraform workspace new ${{ github.ref_name }}
+          terraform workspace select ${{github.base_ref || github.ref_name}}  || terraform workspace new ${{github.base_ref || github.ref_name}} 
           terraform workspace list
     
       - name: Terraform plan
-        run: terraform plan -var-file=${{ github.ref_name }}.tfvars
+        run: terraform plan -var-file=${{github.base_ref || github.ref_name}}.tfvars
      
 # CD - to run only on push on to dev/main branch
  
@@ -62,7 +62,7 @@ jobs:
     needs: [pre-deploy, terraform-init-plan]
     steps:
       - name: Terraform-Apply
-        run: terraform apply -var-file=${{ github.ref_name}}.tfvars -auto-approve
+        run: terraform apply -var-file=${{github.base_ref || github.ref_name}}.tfvars -auto-approve
    
       - name: export Terraform outputs
         id: tfout
