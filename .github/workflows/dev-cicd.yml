@@ -1,5 +1,5 @@
 name: Terraform Workspaces
-run-name: ${{ github.actor }} is running CICD for C3-Group1 ${{github.ref_name}}
+run-name: ${{ github.actor }} is running CICD for C3-Group1 ${{github.base_ref || github.ref_name}} 
 #on:
 #    workflow_dispatch #this is to ensure that the action only runs after you click instead of automatically
 
