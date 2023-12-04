@@ -97,7 +97,10 @@ jobs:
   
       - name: export Terraform outputs
         id: tfout
-        run: echo "S3_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
+        run: |
+         s3_bucket_name=$(terraform output -raw s3_bucket_name) 
+         echo "s3_bucket_name name: $s3_bucket_name" 
+         echo "s3_bucket_name=$s3_bucket_name" >> $GITHUB_OUTPUT
         
       - name: Deploy to AWS S3
         run: aws s3 sync . s3://${{steps.tfout.outputs.S3_NAME}} --delete
