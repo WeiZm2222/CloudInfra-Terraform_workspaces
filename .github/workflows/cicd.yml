@@ -103,7 +103,7 @@ jobs:
          echo "s3_bucket_name=$s3_bucket_name" >> $GITHUB_OUTPUT
         
       - name: Deploy to AWS S3
-        run: aws s3 sync . s3://${{steps.tfout.outputs.S3_NAME}} --delete
+        run: aws s3 sync . s3://${{steps.tfout.outputs.s3_bucket_name}} --delete
         working-directory: ./static-website
 
  
